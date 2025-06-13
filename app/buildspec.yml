@@ -1,0 +1,84 @@
+version: 0.2
+
+# Define environment variables
+# AWS_ACCOUNT_ID and AWS_DEFAULT_REGION are automatically provided by CodeBuild.
+env:
+  variables:
+    ECR_REPO_NAME: "my-nginx"
+    # Use CODEBUILD_BUILD_NUMBER for a unique and incremental image tag
+    IMAGE_TAG: "$CODEBUILD_BUILD_NUMBER" 
+
+phases:
+  install:
+    commands:
+      - echo "Installing dependencies (if any)..."
+
+  pre_build:
+    commands:
+      - echo "CODEBUILD_BUILD_NUMBER = $CODEBUILD_BUILD_NUMBER"
+      - echo "Logging in to Amazon ECR..."
+
+      - AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -f 5 -d ':')
+      - AWS_REGION=$(echo $CODEBUILD_BUILD_ARN | cut -f 4 -d ':')
+      - ECR_REGISTRY_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY_URI
+      - echo "Successfully logged into ECR."
+
+  build:
+    commands:
+      - echo "Building the Docker image..."
+
+      - docker build -t $ECR_REPO_NAME:$IMAGE_TAG .
+      - docker tag $ECR_REPO_NAME:$IMAGE_TAG $ECR_REGISTRY_URI/$ECR_REPO_NAME:$IMAGE_TAG
+      - echo "Docker image built and tagged."
+
+  # The 'post_build' phase is for running tests, pushing images, and cleaning up.
+  post_build:
+    commands:
+      - echo "Starting container for testing..."
+
+      - CONTAINER_ID=$(docker run -d -p 80:80 $ECR_REPO_NAME:$IMAGE_TAG)
+      - echo "Test container ID: $CONTAINER_ID"
+
+      - echo "Waiting for Nginx to start (10 seconds)..."
+      - sleep 10 # Give Nginx enough time to start up inside the container.
+
+      - echo "Testing Nginx response with curl..."
+      # Use curl to send a request to localhost:80 and check the HTTP status code.
+      # -s: Silent mode (don't show progress meter or error messages).
+      # -o /dev/null: Discard output.
+      # -w "%{http_code}": Print only the HTTP status code.
+      - HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/index.html)
+
+      - if [ "$HTTP_STATUS" -eq 200 ]; then
+          echo "Nginx test passed! Received HTTP status 200."
+        else
+          echo "Nginx test failed! Received HTTP status $HTTP_STATUS."
+          # Exit with a non-zero status to fail the CodeBuild build if tests fail.
+          exit 1
+        fi
+
+      - echo "Stopping and removing test container..."
+      # Stop and remove the temporary container.
+      - docker stop $CONTAINER_ID
+      - docker rm $CONTAINER_ID
+      - echo "Test container stopped and removed."
+
+      - echo "Pushing the Docker image to Amazon ECR..."
+      # Push the tagged Docker image to your ECR repository.
+      - docker push $ECR_REGISTRY_URI/$ECR_REPO_NAME:$IMAGE_TAG
+      - echo "Image successfully pushed to ECR."
+
+      - echo "Generating imagedefinitions.json artifact for CodeDeploy..."
+      # Generate the imagedefinitions.json file for CodeDeploy.
+      # The 'name' field must match the container name in your ECS Task Definition.
+      # The 'imageUri' is the full path to the image in ECR.
+      - printf '[{"name":"my-nginx","imageUri":"%s"}]' "$ECR_REGISTRY_URI/$ECR_REPO_NAME:$IMAGE_TAG" > imagedefinitions.json
+      - cat imagedefinitions.json # Print the content for verification
+
+# For CodeDeploy, we specifically need the imagedefinitions.json file for a Rolling Deployment
+# This file simply tells CodeDeploy which container in your ECS task definition should use which Docker image URI from ECR
+artifacts:
+  files:
+    - 'imagedefinitions.json'
+  discard-paths: yes # Discard the entire source directory structure
