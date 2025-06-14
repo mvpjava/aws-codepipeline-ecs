@@ -1,7 +1,4 @@
 #!/bin/sh
-date
-
-cd cfn
 
 echo "$0: Creating ECR Repo"
 ./create-ecr-repo-stack.sh nginx-repo-stack
@@ -12,6 +9,4 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-date
-cd -
 echo "$0 Complete."
