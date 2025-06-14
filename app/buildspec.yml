@@ -25,7 +25,8 @@ phases:
         if [ -z "$REPO_EXISTS" ]; then
            echo "ECR repository '$ECR_REPO_NAME' does not exist. Creating it now..."
            chmod +x infra/01-ECR/01-bootstrap-create-ecr-repo.sh
-          ./infra/01-ECR/01-bootstrap-create-ecr-repo.sh
+           cd infra/01-ECR
+           ./01-bootstrap-create-ecr-repo.sh
            echo "ECR repository '$ECR_REPO_NAME' creation script executed."
         else
            echo "ECR repository '$ECR_REPO_NAME' already exists. Skipping creation."
