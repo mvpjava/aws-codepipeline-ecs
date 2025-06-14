@@ -58,7 +58,7 @@ phases:
       - CONTAINER_ID=$(docker run -d -p 80:80 $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER)
       - echo "CONTAINER_ID = $CONTAINER_ID"
 
-       # Get the container's IP address
+      # Get the container's IP address
       - CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID)
       - echo "CONTAINER_IP = $CONTAINER_IP"
 
