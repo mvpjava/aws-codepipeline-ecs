@@ -61,8 +61,8 @@ phases:
       # -o /dev/null: Discard output.
       # -w "%{http_code}": Print only the HTTP status code.
       - HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/index.html)
-
-      - if [ "$HTTP_STATUS" -eq 200 ]; then
+      - |
+        if [ "$HTTP_STATUS" -eq 200 ]; then
           echo "Nginx test passed! Received HTTP status 200."
         else
           echo "Nginx test failed! Received HTTP status $HTTP_STATUS."
