@@ -16,6 +16,18 @@ phases:
   pre_build:
     commands:
       - echo "CODEBUILD_BUILD_NUMBER = $CODEBUILD_BUILD_NUMBER"
+      - echo "Checking if ECR repository '$ECR_REPO_NAME' already exists..."
+
+      - REPO_EXISTS=$(aws ecr describe-repositories --repository-names $ECR_REPO_NAME --query "repositories[0].repositoryName" 2>/dev/null)
+      - if [ -z "$REPO_EXISTS" ]; then
+           echo "ECR repository '$ECR_REPO_NAME' does not exist. Creating it now..."
+           chmod +x infra/01-ECR/01-bootstrap-create-ecr-repo.sh
+          ./infra/01-ECR/01-bootstrap-create-ecr-repo.sh
+           echo "ECR repository '$ECR_REPO_NAME' creation script executed."
+        else
+           echo "ECR repository '$ECR_REPO_NAME' already exists. Skipping creation."
+        fi
+
       - echo "Logging in to Amazon ECR..."
 
       - AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -f 5 -d ':')

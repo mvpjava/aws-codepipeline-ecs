@@ -12,7 +12,7 @@ echo "Creating Stack"
 
 aws cloudformation create-stack \
   --stack-name $STACK_NAME  \
-  --template-body file://cfn-templates/ecr-create-repo-cloudformation.json \
+  --template-body file://ecr-create-repo-cloudformation.json \
   --parameters \
     ParameterKey=AwsRegion,ParameterValue="eu-west-2" \
     ParameterKey=EcrRepositoryName,ParameterValue="my-nginx" 

@@ -1,15 +1,6 @@
 #!/bin/sh
 date
 
-echo "$0: Creating ECR Repo  ..."
-./01-create-ecr-repo-stack.sh ecr-repo
-
-# Check if the last command was successful
-if [ $? -ne 0 ]; then
-  echo "Previous command failed, exiting $0"
-  exit 1
-fi
-
 echo "$0: Creating all infrastructure stacks for AWS ECS Fargate with nginx task definition  ..."
 ./01a-create-ecs-cluster-stack.sh ecs-cluster
 

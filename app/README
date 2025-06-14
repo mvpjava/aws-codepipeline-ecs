@@ -1,0 +1,1 @@
+- Any changes to the app folder should kick off a CodeBuild which then will automatically call the infra/01-ECR script to create repo first, if necessary

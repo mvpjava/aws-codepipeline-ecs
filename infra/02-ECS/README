@@ -1,0 +1,4 @@
+- Ensure the ECR Repo is first created in 01-ECR directory
+- Then ensure there is a my-nginx:latest image in the ECR repo even before running anything in 02-ECS because the task definition is making reference to the
+  docker image my-nginx:latest
+
