@@ -25,6 +25,7 @@ phases:
            chmod +x infra/01-ECR/01-bootstrap-create-ecr-repo.sh
            cd infra/01-ECR
            ./01-bootstrap-create-ecr-repo.sh
+           cd $CODEBUILD_SRC_DIR # Go back to the original source root
            echo "ECR repository '$ECR_REPO_NAME' creation script executed."
         else
            echo "ECR repository '$ECR_REPO_NAME' already exists. Skipping creation."
@@ -41,11 +42,12 @@ phases:
   build:
     commands:
       - echo "Building the Docker image..."
-
+      - cd "$CODEBUILD_SRC_DIR/app"
       - docker build -t $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER .
       - docker tag $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER $ECR_REGISTRY_URI/$ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER
       - docker tag $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER $ECR_REGISTRY_URI/$ECR_REPO_NAME:latest
       - echo "Docker image built and tagged."
+      - cd $CODEBUILD_SRC_DIR
 
   # The 'post_build' phase is for running tests, pushing images, and cleaning up.
   post_build:
