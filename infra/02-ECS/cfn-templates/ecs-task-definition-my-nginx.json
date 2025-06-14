@@ -6,7 +6,7 @@
       "Properties": {
         "Family": "my-nginx-task",
         "RuntimePlatform": {
-          "CpuArchitecture": "ARM64",
+          "CpuArchitecture": "X86_64",
           "OperatingSystemFamily": "LINUX"
         },
         "TaskRoleArn": "arn:aws:iam::403177882230:role/ecsTaskExecutionRole",
