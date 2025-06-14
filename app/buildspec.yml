@@ -71,8 +71,8 @@ phases:
       # -s: Silent mode (don't show progress meter or error messages).
       # -o /dev/null: Discard output.
       # -w "%{http_code}": Print only the HTTP status code.
-      # Use the dynamically obtained IP address
-      - HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$CONTAINER_IP:80/index.html)
+      # Use the dynamically obtained IP address
+      - HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$CONTAINER_IP:80/index.html)
       - |
         if [ "$HTTP_STATUS" -eq 200 ]; then
           echo "Nginx test passed! Received HTTP status 200."
