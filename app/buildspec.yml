@@ -42,7 +42,7 @@ phases:
     commands:
       - echo "Building the Docker image..."
 
-      - docker build -t $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER
+      - docker build -t $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER .
       - docker tag $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER $ECR_REGISTRY_URI/$ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER
       - docker tag $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER $ECR_REGISTRY_URI/$ECR_REPO_NAME:latest
       - echo "Docker image built and tagged."
