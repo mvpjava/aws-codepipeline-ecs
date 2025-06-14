@@ -5,8 +5,6 @@ version: 0.2
 env:
   variables:
     ECR_REPO_NAME: "my-nginx"
-    # Use CODEBUILD_BUILD_NUMBER for a unique and incremental image tag
-    IMAGE_TAG: "$CODEBUILD_BUILD_NUMBER" 
 
 phases:
   install:
@@ -44,8 +42,9 @@ phases:
     commands:
       - echo "Building the Docker image..."
 
-      - docker build -t $ECR_REPO_NAME:$IMAGE_TAG .
-      - docker tag $ECR_REPO_NAME:$IMAGE_TAG $ECR_REGISTRY_URI/$ECR_REPO_NAME:$IMAGE_TAG
+      - docker build -t $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER
+      - docker tag $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER $ECR_REGISTRY_URI/$ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER
+      - docker tag $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER $ECR_REGISTRY_URI/$ECR_REPO_NAME:latest
       - echo "Docker image built and tagged."
 
   # The 'post_build' phase is for running tests, pushing images, and cleaning up.
@@ -53,7 +52,7 @@ phases:
     commands:
       - echo "Starting container for testing..."
 
-      - CONTAINER_ID=$(docker run -d -p 80:80 $ECR_REPO_NAME:$IMAGE_TAG)
+      - CONTAINER_ID=$(docker run -d -p 80:80 $ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER)
 
       - echo "Waiting for Nginx to start (10 seconds)..."
       - sleep 10 # Give Nginx enough time to start up inside the container.
@@ -81,14 +80,15 @@ phases:
 
       - echo "Pushing the Docker image to Amazon ECR..."
       # Push the tagged Docker image to your ECR repository.
-      - docker push $ECR_REGISTRY_URI/$ECR_REPO_NAME:$IMAGE_TAG
+      - docker push $ECR_REGISTRY_URI/$ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER
+      - docker push $ECR_REGISTRY_URI/$ECR_REPO_NAME:latest
       - echo "Image successfully pushed to ECR."
 
       - echo "Generating imagedefinitions.json artifact for CodeDeploy..."
       # Generate the imagedefinitions.json file for CodeDeploy.
       # The 'name' field must match the container name in your ECS Task Definition.
       # The 'imageUri' is the full path to the image in ECR.
-      - printf '[{"name":"my-nginx","imageUri":"%s"}]' "$ECR_REGISTRY_URI/$ECR_REPO_NAME:$IMAGE_TAG" > imagedefinitions.json
+      - printf '[{"name":"my-nginx","imageUri":"%s"}]' "$ECR_REGISTRY_URI/$ECR_REPO_NAME:$CODEBUILD_BUILD_NUMBER" > imagedefinitions.json
       - cat imagedefinitions.json # Print the content for verification
 
 # For CodeDeploy, we specifically need the imagedefinitions.json file for a Rolling Deployment
