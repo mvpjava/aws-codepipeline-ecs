@@ -19,7 +19,8 @@ phases:
       - echo "Checking if ECR repository '$ECR_REPO_NAME' already exists..."
 
       - REPO_EXISTS=$(aws ecr describe-repositories --repository-names $ECR_REPO_NAME --query "repositories[0].repositoryName" 2>/dev/null)
-      - if [ -z "$REPO_EXISTS" ]; then
+      - |
+        if [ -z "$REPO_EXISTS" ]; then
            echo "ECR repository '$ECR_REPO_NAME' does not exist. Creating it now..."
            chmod +x infra/01-ECR/01-bootstrap-create-ecr-repo.sh
           ./infra/01-ECR/01-bootstrap-create-ecr-repo.sh
@@ -50,7 +51,6 @@ phases:
       - echo "Starting container for testing..."
 
       - CONTAINER_ID=$(docker run -d -p 80:80 $ECR_REPO_NAME:$IMAGE_TAG)
-      - echo "Test container ID: $CONTAINER_ID"
 
       - echo "Waiting for Nginx to start (10 seconds)..."
       - sleep 10 # Give Nginx enough time to start up inside the container.
