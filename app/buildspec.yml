@@ -18,7 +18,9 @@ phases:
       - echo "CODEBUILD_BUILD_NUMBER = $CODEBUILD_BUILD_NUMBER"
       - echo "Checking if ECR repository '$ECR_REPO_NAME' already exists..."
 
-      - REPO_EXISTS=$(aws ecr describe-repositories --repository-names $ECR_REPO_NAME --query "repositories[0].repositoryName" 2>/dev/null)
+      # Use a more robust check that doesn't halt the build on a non-zero exit code.
+      # '|| true' ensures that if the aws command fails (e.g., repo not found), the script doesn't exit and the following 'if' can exececute
+      - REPO_EXISTS=$(aws ecr describe-repositories --repository-names $ECR_REPO_NAME --query "repositories[0].repositoryName" 2>/dev/null || true)
       - |
         if [ -z "$REPO_EXISTS" ]; then
            echo "ECR repository '$ECR_REPO_NAME' does not exist. Creating it now..."
