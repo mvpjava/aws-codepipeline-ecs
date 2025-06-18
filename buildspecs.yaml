@@ -1,0 +1,13 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:    
+      python: 3.9
+    commands: 
+      - pip install aws-sam-cli
+  build:
+
+
+artifacts:
+  files:
+    - packaged.yaml 
