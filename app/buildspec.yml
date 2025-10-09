@@ -103,7 +103,9 @@ phases:
 
 # For CodeDeploy, we specifically need the imagedefinitions.json file for a Rolling Deployment
 # This file simply tells CodeDeploy which container in your ECS task definition should use which Docker image URI from ECR
+# FYI: For blue/green deployments, its the imageDetail.json file
 artifacts:
   files:
     - 'imagedefinitions.json'
   discard-paths: yes # Discard the entire source directory structure
+
